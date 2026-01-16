@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>1D Heat Conduction Simulator</title>
+
+  <!-- React -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+
+<body style="margin:0;background:#C0C0C0">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const HeatConductionSimulator = () => {
+
+      const materials = {
+        "Iron (Pure)": 2.3e-5,
+        "Steel (1020)": 1.17e-5,
+        "Aluminum (6061)": 6.4e-5,
+        "Copper": 1.11e-4,
+        "Custom": 0
+      };
+
+      const [material, setMaterial] = useState("Iron (Pure)");
+      const [customAlpha, setCustomAlpha] = useState("2.3e-5");
+      const [length, setLength] = useState(1);
+      const [nx] = useState(50);
+      const [T0, setT0] = useState(100);
+      const [TLeft, setTLeft] = useState(0);
+      const [TRight, setTRight] = useState(0);
+      const [temps, setTemps] = useState([]);
+      const [running, setRunning] = useState(false);
+      const [time, setTime] = useState(0);
+
+      const alpha =
+        material === "Custom"
+          ? parseFloat(customAlpha)
+          : materials[material];
+
+      useEffect(() => reset(), [material, customAlpha, length, T0, TLeft, TRight]);
+
+      function reset() {
+        if (!alpha || alpha <= 0) return;
+        const T = Array(nx).fill(T0);
+        T[0] = TLeft;
+        T[nx - 1] = TRight;
+        setTemps(T);
+        setTime(0);
+        setRunning(false);
+      }
+
+      function step() {
+        const dx = length / (nx - 1);
+        const dt = 0.4 * dx * dx / (2 * alpha);
+        const r = alpha * dt / (dx * dx);
+
+        const Tnew = [...temps];
+        for (let i = 1; i < nx - 1; i++) {
+          Tnew[i] = temps[i] + r * (temps[i + 1] - 2 * temps[i] + temps[i - 1]);
+        }
+        Tnew[0] = TLeft;
+        Tnew[nx - 1] = TRight;
+
+        setTemps(Tnew);
+        setTime(t => t + dt);
+      }
+
+      useEffect(() => {
+        if (!running) return;
+        const id = setInterval(step, 50);
+        return () => clearInterval(id);
+      }, [running, temps]);
+
+      return (
+        <div style={{ padding: 15, fontFamily: "Arial" }}>
+          <h2>1D Heat Conduction Simulator</h2>
+
+          <label>Material:</label>
+          <select value={material} onChange={e => setMaterial(e.target.value)}>
+            {Object.keys(materials).map(m => (
+              <option key={m}>{m}</option>
+            ))}
+          </select>
+
+          {material === "Custom" && (
+            <input
+              value={customAlpha}
+              onChange={e => setCustomAlpha(e.target.value)}
+              placeholder="alpha (m²/s)"
+            />
+          )}
+
+          <p>α = {alpha?.toExponential(2)} m²/s</p>
+
+          <button onClick={() => setRunning(!running)}>
+            {running ? "Pause" : "Start"}
+          </button>
+          <button onClick={reset}>Reset</button>
+
+          <p>Time: {time.toFixed(3)} s</p>
+
+          <canvas
+            width="600"
+            height="200"
+            style={{ border: "2px solid black", background: "white" }}
+            ref={canvas => {
+              if (!canvas || temps.length === 0) return;
+              const ctx = canvas.getContext("2d");
+              ctx.clearRect(0, 0, 600, 200);
+              ctx.beginPath();
+              temps.forEach((T, i) => {
+                const x = (i / (nx - 1)) * 600;
+                const y = 200 - (T / 200) * 180;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+              });
+              ctx.strokeStyle = "red";
+              ctx.lineWidth = 2;
+              ctx.stroke();
+            }}
+          />
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById("root"))
+      .render(<HeatConductionSimulator />);
+  </script>
+</body>
+</html>
