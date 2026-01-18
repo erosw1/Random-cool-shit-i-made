@@ -1,125 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>1D Heat Conduction Simulator</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #d3d3d3;
-      padding: 20px;
-    }
-    canvas {
-      background: white;
-      border: 2px solid black;
-    }
-    button, select {
-      margin: 5px;
-      padding: 5px 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1D Heat Conduction Simulator - Heat 3</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #C0C0C0;
+            margin: 0;
+            padding: 10px;
+        }
+        table {
+            border-collapse: collapse;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        button {
+            cursor: pointer;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
 </head>
 <body>
+    <!-- Header -->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #000080; margin-bottom: 10px;">
+        <tbody>
+            <tr>
+                <td style="padding: 10px;">
+                    <font color="#FFFFFF" size="6"><b>1D Heat Conduction Simulator</b></font>
+                    <br>
+                    <font color="#FFFF00" size="3">Finite Difference Method for Transient Heat Transfer</font>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
-<h2>1D Heat Conduction Simulator</h2>
+    <!-- Theory Section -->
+    <table width="100%" cellpadding="10" cellspacing="2" border="1" style="background-color: #FFFFFF; border-color: #808080; margin-bottom: 10px;">
+        <tbody>
+            <tr>
+                <td bgcolor="#008080">
+                    <font color="#FFFFFF" size="4"><b>Theory</b></font>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p><b>1. The Heat Equation (Fourier's Law)</b></p>
+                    <p>The one-dimensional transient heat conduction is governed by:</p>
+                    <p style="font-family: 'Courier New'; background-color: #FFFFCC; padding: 10px; border: 1px solid black;">
+                        ∂T/∂t = α · ∂²T/∂x²
+                    </p>
+                    <p>Where:</p>
+                    <ul>
+                        <li><b>T</b> = Temperature (°C)</li>
+                        <li><b>t</b> = Time (s)</li>
+                        <li><b>x</b> = Spatial coordinate (m)</li>
+                        <li><b>α</b> = Thermal diffusivity (m²/s), defined as α = k/(ρ·c<sub>p</sub>)</li>
+                    </ul>
 
-<label>Material:</label>
-<select id="material">
-  <option value="2.3e-5">Iron (Pure)</option>
-  <option value="1.1e-4">Aluminum</option>
-  <option value="1.2e-5">Steel</option>
-</select>
+                    <p><b>2. Finite Difference Discretization </b></p>
+                    <p>Using forward difference in time and central difference in space:</p>
+                    <p style="font-family: 'Courier New'; background-color: #FFFFCC; padding: 10px; border: 1px solid black;">
+                        T<sub>i</sub><sup>n+1</sup> = T<sub>i</sub><sup>n</sup> + r · [T<sub>i+1</sub><sup>n</sup> - 2·T<sub>i</sub><sup>n</sup> + T<sub>i-1</sub><sup>n</sup>]
+                    </p>
+                    <p>Where r = α·Δt/Δx² is the mesh Fourier number</p>
 
-<p>Thermal diffusivity α = <span id="alphaVal">2.3e-5</span> m²/s</p>
+                    <p><b>3.Stability Condition</b></p>
+                    <p>For numerical stability:</p>
+                    <p style="font-family: 'Courier New'; background-color: #FFFFCC; padding: 10px; border: 1px solid black;">
+                        Δt ≤ Δx² / (2α)
+                    </p>
+                    <p>This ensures that r ≤ 0.5, preventing numerical oscillations and instability.</p>
 
-<button onclick="start()">Start</button>
-<button onclick="reset()">Reset</button>
+                    <p><b>4. Boundary Conditions</b></p>
+                    <p>Fixed temperature conditions are applied at both ends:</p>
+                    <ul>
+                        <li>T(x=0, t) = T<sub>left</sub></li>
+                        <li>T(x=L, t) = T<sub>right</sub></li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
-<p>Time: <span id="time">0.000</span> s</p>
+    <!-- Main Content -->
+    <table width="100%" cellpadding="0" cellspacing="10" border="0">
+        <tbody>
+            <tr>
+                <td width="30%" valign="top">
+                    <!-- Control Panel -->
+                    <table width="100%" cellpadding="10" cellspacing="2" border="1" style="background-color: #FFFFFF; border-color: #808080;">
+                        <tbody>
+                            <tr>
+                                <td bgcolor="#800000">
+                                    <font color="#FFFFFF" size="4"><b>Control Panel</b></font>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p><b>Material Selection:</b></p>
+                                    <select id="materialSelect" style="width: 100%; padding: 5px; font-size: 14px;">
+                                        <option value="2.3e-5">Iron (Pure)</option>
+                                        <option value="1.172e-5">Steel - Carbon (AISI 1020)</option>
+                                        <option value="4.2e-6">Steel - Stainless (304)</option>
+                                        <option value="3.9e-6">Steel - Stainless (316)</option>
+                                        <option value="7.0e-6">Steel - Tool (AISI D2)</option>
+                                        <option value="5.5e-6">Steel - High Speed (M2)</option>
+                                        <option value="9.7e-5">Aluminum - Pure</option>
+                                        <option value="6.8e-5">Aluminum - Alloy (2024)</option>
+                                        <option value="6.4e-5">Aluminum - Alloy (6061)</option>
+                                        <option value="4.8e-5">Aluminum - Alloy (7075)</option>
+                                        <option value="1.11e-4">Copper - Pure</option>
+                                        <option value="3.4e-5">Copper - Brass (70/30)</option>
+                                        <option value="2.6e-5">Copper - Bronze</option>
+                                        <option value="3.2e-6">Titanium (Grade 5)</option>
+                                        <option value="2.3e-5">Nickel</option>
+                                        <option value="4.1e-5">Zinc</option>
+                                        <option value="2.4e-5">Lead</option>
+                                        <option value="1.71e-4">Silver</option>
+                                        <option value="1.27e-4">Gold</option>
+                                        <option value="6.8e-5">Tungsten</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                    
+                                    <div id="customAlphaDiv" style="margin-top: 10px; display: none;">
+                                        <p><b>Custom α (m²/s):</b></p>
+                                        <input type="text" id="customAlpha" value="2.3e-5" style="width: 100%; padding: 5px; font-size: 14px;">
+                                    </div>
+                                    
+                                    <p style="background-color: #FFFFE0; padding: 5px; margin-top: 10px; border: 1px solid black;">
+                                        <font size="2">α = <span id="alphaDisplay">2.30e-5</span> m²/s</font>
+                                    </p>
 
-<canvas id="plot" width="600" height="200"></canvas>
+                                    <hr>
 
-<script>
-/* ---------------- Physics Parameters ---------------- */
-const N = 50;           // spatial points
-const L = 1.0;          // rod length (m)
-const dx = L / (N - 1);
-let alpha = 2.3e-5;
-const dt = 0.2 * dx * dx / alpha; // CFL condition
-let t = 0;
+                                    <p><b>Bar Length (m):</b> <span id="lengthValue">1.0</span></p>
+                                    <input type="range" id="lengthSlider" min="0.1" max="2" step="0.1" value="1.0">
 
-let T = new Array(N).fill(20);
-let Tnew = new Array(N).fill(20);
+                                    <p><b>Initial Temperature (°C):</b> <span id="t0Value">100</span></p>
+                                    <input type="range" id="t0Slider" min="0" max="200" step="10" value="100">
 
-T[0] = 100;
-T[N - 1] = 50;
+                                    <p><b>Left Boundary (°C):</b> <span id="tLeftValue">0</span></p>
+                                    <input type="range" id="tLeftSlider" min="0" max="200" step="10" value="0">
 
-let interval = null;
+                                    <p><b>Right Boundary (°C):</b> <span id="tRightValue">0</span></p>
+                                    <input type="range" id="tRightSlider" min="0" max="200" step="10" value="0">
 
-/* ---------------- Simulation Functions ---------------- */
-function step() {
-  for (let i = 1; i < N - 1; i++) {
-    Tnew[i] =
-      T[i] +
-      alpha * dt / (dx * dx) *
-      (T[i + 1] - 2 * T[i] + T[i - 1]);
-  }
+                                    <hr>
 
-  Tnew[0] = 100;
-  Tnew[N - 1] = 50;
+                                    <center>
+                                        <button id="startBtn" style="padding: 10px 20px; font-size: 16px; background-color: #00FF00; border: 2px outset; width: 48%; margin-right: 4%;">
+                                            START
+                                        </button>
+                                        <button id="resetBtn" style="padding: 10px 20px; font-size: 16px; background-color: #FFFF00; border: 2px outset; width: 48%;">
+                                            RESET
+                                        </button>
+                                    </center>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-  [T, Tnew] = [Tnew, T];
-
-  t += dt;
-  document.getElementById("time").textContent = t.toFixed(3);
-
-  draw();
-}
-
-/* ---------------- Plotting ---------------- */
-function draw() {
-  const c = document.getElementById("plot");
-  const ctx = c.getContext("2d");
-
-  ctx.clearRect(0, 0, c.width, c.height);
-
-  ctx.beginPath();
-  ctx.strokeStyle = "red";
-
-  for (let i = 0; i < N; i++) {
-    const x = (i / (N - 1)) * c.width;
-    const y = c.height - (T[i] / 120) * c.height;
-
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-
-  ctx.stroke();
-}
-
-/* ---------------- Controls ---------------- */
-function start() {
-  if (interval) return;
-  interval = setInterval(step, 30);
-}
-
-function reset() {
-  clearInterval(interval);
-  interval = null;
-  t = 0;
-  T.fill(20);
-  T[0] = 100;
-  T[N - 1] = 50;
-  draw();
-}
-
-document.getElementById("material").onchange = e => {
-  alpha = parseFloat(e.target.value);
-  document.getElementById("alphaVal").textContent = alpha;
-};
-
-draw();
-</script>
-
-</body>
-</html>
+                    <!-- Metrics -->
+                    <table width="100%" cellpadding="10" cellspacing="2" border="1" style="background-color: #FFFFFF; border-color: #808080; margin-top: 10px;">
+                        <tbody>
+                            <tr>
+                                <td bgcolor="#000080">
+                                    <font color="#FFFFFF" size="4"><b>Metrics</b></font>
