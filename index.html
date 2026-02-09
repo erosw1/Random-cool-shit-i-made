@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1D Heat Conduction Simulator - Heat 3</title>
+    <title>Advanced Heat Transfer Simulator - HEAT 0.5</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,14 +14,95 @@
         table {
             border-collapse: collapse;
         }
+        
+        /* Enhanced Slider Styling - Windows 95/98 style */
         input[type="range"] {
+            -webkit-appearance: none;
             width: 100%;
+            height: 24px;
+            background: transparent;
+            outline: none;
+            margin: 5px 0;
         }
+        
+        input[type="range"]::-webkit-slider-track {
+            width: 100%;
+            height: 8px;
+            background: #FFFFFF;
+            border: 2px inset #808080;
+            border-radius: 0;
+        }
+        
+        input[type="range"]::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            background: #FFFFFF;
+            border: 2px inset #808080;
+            border-radius: 0;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 24px;
+            background: linear-gradient(to bottom, #DFDFDF 0%, #C0C0C0 50%, #808080 100%);
+            border: 2px outset #DFDFDF;
+            cursor: pointer;
+            border-radius: 0;
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 24px;
+            background: linear-gradient(to bottom, #DFDFDF 0%, #C0C0C0 50%, #808080 100%);
+            border: 2px outset #DFDFDF;
+            cursor: pointer;
+            border-radius: 0;
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        input[type="range"]:active::-webkit-slider-thumb {
+            border-style: inset;
+            background: linear-gradient(to bottom, #808080 0%, #C0C0C0 50%, #DFDFDF 100%);
+        }
+        
+        input[type="range"]:active::-moz-range-thumb {
+            border-style: inset;
+            background: linear-gradient(to bottom, #808080 0%, #C0C0C0 50%, #DFDFDF 100%);
+        }
+        
+        .slider-container {
+            background: #C0C0C0;
+            padding: 8px;
+            border: 2px groove #FFFFFF;
+            margin: 5px 0;
+        }
+        
         button {
             cursor: pointer;
         }
         canvas {
             display: block;
+        }
+        
+        .metric-box {
+            background: #FFFFFF;
+            border: 2px inset #808080;
+            padding: 8px;
+            margin: 5px 0;
+        }
+        
+        .checkbox-container {
+            background: #E0E0E0;
+            padding: 10px;
+            border: 2px groove #FFFFFF;
+            margin: 5px 0;
+        }
+        
+        input[type="checkbox"] {
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -31,9 +112,9 @@
         <tbody>
             <tr>
                 <td style="padding: 10px;">
-                    <font color="#FFFFFF" size="6"><b>1D Heat Conduction Simulator</b></font>
+                    <font color="#FFFFFF" size="6"><b>Advanced Heat Transfer Simulator - HEAT 5</b></font>
                     <br>
-                    <font color="#FFFF00" size="3">Finite Difference Method for Transient Heat Transfer</font>
+                    <font color="#FFFF00" size="3">Eros Hama</font>
                 </td>
             </tr>
         </tbody>
@@ -44,43 +125,44 @@
         <tbody>
             <tr>
                 <td bgcolor="#008080">
-                    <font color="#FFFFFF" size="4"><b>Theory</b></font>
+                    <font color="#FFFFFF" size="4"><b>Material Science & Heat Transfer Theory</b></font>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <p><b>1. The Heat Equation (Fourier's Law)</b></p>
-                    <p>The one-dimensional transient heat conduction is governed by:</p>
+                    <p><b>1. Governing Equation with Multi-Mode Heat Transfer</b></p>
                     <p style="font-family: 'Courier New'; background-color: #FFFFCC; padding: 10px; border: 1px solid black;">
-                        ∂T/∂t = α · ∂²T/∂x²
+                        ρ·c<sub>p</sub>·∂T/∂t = k·∂²T/∂x² + q<sub>gen</sub> - h·A<sub>s</sub>·(T - T<sub>∞</sub>) - ε·σ·A<sub>s</sub>·(T⁴ - T<sub>sur</sub>⁴)
                     </p>
-                    <p>Where:</p>
+                    <p><b>Material Properties:</b></p>
                     <ul>
-                        <li><b>T</b> = Temperature (°C)</li>
-                        <li><b>t</b> = Time (s)</li>
-                        <li><b>x</b> = Spatial coordinate (m)</li>
-                        <li><b>α</b> = Thermal diffusivity (m²/s), defined as α = k/(ρ·c<sub>p</sub>)</li>
+                        <li><b>α</b> = Thermal diffusivity (m²/s) = k/(ρ·c<sub>p</sub>)</li>
+                        <li><b>k</b> = Thermal conductivity (W/m·K) - measure of heat conduction capability</li>
+                        <li><b>ρ</b> = Density (kg/m³) - mass per unit volume</li>
+                        <li><b>c<sub>p</sub></b> = Specific heat capacity (J/kg·K) - energy to raise 1kg by 1K</li>
+                        <li><b>ε</b> = Emissivity (0-1) - surface radiative efficiency</li>
                     </ul>
 
-                    <p><b>2. Finite Difference Discretization </b></p>
-                    <p>Using forward difference in time and central difference in space:</p>
-                    <p style="font-family: 'Courier New'; background-color: #FFFFCC; padding: 10px; border: 1px solid black;">
-                        T<sub>i</sub><sup>n+1</sup> = T<sub>i</sub><sup>n</sup> + r · [T<sub>i+1</sub><sup>n</sup> - 2·T<sub>i</sub><sup>n</sup> + T<sub>i-1</sub><sup>n</sup>]
-                    </p>
-                    <p>Where r = α·Δt/Δx² is the mesh Fourier number</p>
-
-                    <p><b>3.Stability Condition</b></p>
-                    <p>For numerical stability:</p>
-                    <p style="font-family: 'Courier New'; background-color: #FFFFCC; padding: 10px; border: 1px solid black;">
-                        Δt ≤ Δx² / (2α)
-                    </p>
-                    <p>This ensures that r ≤ 0.5, preventing numerical oscillations and instability.</p>
-
-                    <p><b>4. Boundary Conditions</b></p>
-                    <p>Fixed temperature conditions are applied at both ends:</p>
+                    <p><b>2. Heat Transfer Modes</b></p>
                     <ul>
-                        <li>T(x=0, t) = T<sub>left</sub></li>
-                        <li>T(x=L, t) = T<sub>right</sub></li>
+                        <li><b>Conduction:</b> q<sub>cond</sub> = -k·A·∂T/∂x (Fourier's Law)</li>
+                        <li><b>Convection:</b> q<sub>conv</sub> = h·A·(T<sub>s</sub> - T<sub>∞</sub>) (Newton's Law of Cooling)</li>
+                        <li><b>Radiation:</b> q<sub>rad</sub> = ε·σ·A·(T<sub>s</sub>⁴ - T<sub>sur</sub>⁴) (Stefan-Boltzmann Law)</li>
+                    </ul>
+
+                    <p><b>3. Dimensionless Numbers</b></p>
+                    <ul>
+                        <li><b>Biot Number (Bi):</b> Bi = h·L<sub>c</sub>/k - ratio of internal to external thermal resistance</li>
+                        <li><b>Fourier Number (Fo):</b> Fo = α·t/L² - dimensionless time</li>
+                        <li><b>Péclet Number (Pe):</b> Pe = Re·Pr - ratio of convective to conductive transport</li>
+                    </ul>
+
+                    <p><b>4. Microstructural Effects</b></p>
+                    <ul>
+                        <li><b>Grain Size:</b> Affects phonon scattering and thermal conductivity</li>
+                        <li><b>Phase Composition:</b> Multi-phase materials have complex thermal behavior</li>
+                        <li><b>Lattice Defects:</b> Dislocations, vacancies reduce thermal conductivity</li>
+                        <li><b>Anisotropy:</b> Directional dependence of thermal properties</li>
                     </ul>
                 </td>
             </tr>
@@ -97,58 +179,106 @@
                         <tbody>
                             <tr>
                                 <td bgcolor="#800000">
-                                    <font color="#FFFFFF" size="4"><b>Control Panel</b></font>
+                                    <font color="#FFFFFF" size="4"><b>Material & Configuration</b></font>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
                                     <p><b>Material Selection:</b></p>
                                     <select id="materialSelect" style="width: 100%; padding: 5px; font-size: 14px;">
-                                        <option value="2.3e-5">Iron (Pure)</option>
-                                        <option value="1.172e-5">Steel - Carbon (AISI 1020)</option>
-                                        <option value="4.2e-6">Steel - Stainless (304)</option>
-                                        <option value="3.9e-6">Steel - Stainless (316)</option>
-                                        <option value="7.0e-6">Steel - Tool (AISI D2)</option>
-                                        <option value="5.5e-6">Steel - High Speed (M2)</option>
-                                        <option value="9.7e-5">Aluminum - Pure</option>
-                                        <option value="6.8e-5">Aluminum - Alloy (2024)</option>
-                                        <option value="6.4e-5">Aluminum - Alloy (6061)</option>
-                                        <option value="4.8e-5">Aluminum - Alloy (7075)</option>
-                                        <option value="1.11e-4">Copper - Pure</option>
-                                        <option value="3.4e-5">Copper - Brass (70/30)</option>
-                                        <option value="2.6e-5">Copper - Bronze</option>
-                                        <option value="3.2e-6">Titanium (Grade 5)</option>
-                                        <option value="2.3e-5">Nickel</option>
-                                        <option value="4.1e-5">Zinc</option>
-                                        <option value="2.4e-5">Lead</option>
-                                        <option value="1.71e-4">Silver</option>
-                                        <option value="1.27e-4">Gold</option>
-                                        <option value="6.8e-5">Tungsten</option>
-                                        <option value="custom">Custom</option>
+                                        <option value="2.3e-5,80,450,7874,0.28">Iron (Pure) - BCC Crystal</option>
+                                        <option value="1.172e-5,51.9,486,7850,0.70">Steel - Carbon (AISI 1020)</option>
+                                        <option value="4.2e-6,16.2,500,8000,0.60">Steel - Stainless (304) - Austenitic</option>
+                                        <option value="3.9e-6,16.3,500,8000,0.55">Steel - Stainless (316) - Austenitic</option>
+                                        <option value="7.0e-6,20,460,7750,0.65">Steel - Tool (AISI D2) - Martensitic</option>
+                                        <option value="5.5e-6,22,460,8160,0.62">Steel - High Speed (M2)</option>
+                                        <option value="9.7e-5,237,903,2700,0.09">Aluminum - Pure (FCC)</option>
+                                        <option value="6.8e-5,177,875,2780,0.12">Aluminum - Alloy (2024-T3)</option>
+                                        <option value="6.4e-5,167,896,2700,0.11">Aluminum - Alloy (6061-T6)</option>
+                                        <option value="4.8e-5,130,960,2810,0.13">Aluminum - Alloy (7075-T6)</option>
+                                        <option value="1.11e-4,401,385,8960,0.03">Copper - Pure (FCC)</option>
+                                        <option value="3.4e-5,120,380,8520,0.15">Copper - Brass (70/30)</option>
+                                        <option value="2.6e-5,50,343,8800,0.18">Copper - Bronze</option>
+                                        <option value="3.2e-6,7.4,526,4430,0.30">Titanium (Grade 5) - Ti-6Al-4V</option>
+                                        <option value="2.3e-5,90.7,444,8900,0.10">Nickel - FCC Crystal</option>
+                                        <option value="4.1e-5,116,388,7140,0.25">Zinc - HCP Crystal</option>
+                                        <option value="2.4e-5,35,129,11340,0.28">Lead - FCC Crystal</option>
+                                        <option value="1.71e-4,429,235,10490,0.02">Silver - FCC Crystal</option>
+                                        <option value="1.27e-4,318,129,19300,0.02">Gold - FCC Crystal</option>
+                                        <option value="6.8e-5,173,132,19300,0.03">Tungsten - BCC Crystal</option>
+                                        <option value="custom">Custom Material</option>
                                     </select>
                                     
-                                    <div id="customAlphaDiv" style="margin-top: 10px; display: none;">
-                                        <p><b>Custom α (m²/s):</b></p>
-                                        <input type="text" id="customAlpha" value="2.3e-5" style="width: 100%; padding: 5px; font-size: 14px;">
+                                    <div id="customMaterialDiv" style="margin-top: 10px; display: none;">
+                                        <p><b>Custom Material Properties:</b></p>
+                                        <table width="100%">
+                                            <tr><td>α (m²/s):</td><td><input type="text" id="customAlpha" value="2.3e-5" style="width: 100%;"></td></tr>
+                                            <tr><td>k (W/m·K):</td><td><input type="text" id="customK" value="80" style="width: 100%;"></td></tr>
+                                            <tr><td>c<sub>p</sub> (J/kg·K):</td><td><input type="text" id="customCp" value="450" style="width: 100%;"></td></tr>
+                                            <tr><td>ρ (kg/m³):</td><td><input type="text" id="customRho" value="7874" style="width: 100%;"></td></tr>
+                                            <tr><td>ε (0-1):</td><td><input type="text" id="customEmissivity" value="0.28" style="width: 100%;"></td></tr>
+                                        </table>
                                     </div>
                                     
-                                    <p style="background-color: #FFFFE0; padding: 5px; margin-top: 10px; border: 1px solid black;">
-                                        <font size="2">α = <span id="alphaDisplay">2.30e-5</span> m²/s</font>
-                                    </p>
+                                    <div class="metric-box" style="margin-top: 10px;">
+                                        <font size="2">
+                                            <b>α:</b> <span id="alphaDisplay">2.30e-5</span> m²/s<br>
+                                            <b>k:</b> <span id="kDisplay">80.0</span> W/m·K<br>
+                                            <b>c<sub>p</sub>:</b> <span id="cpDisplay">450</span> J/kg·K<br>
+                                            <b>ρ:</b> <span id="rhoDisplay">7874</span> kg/m³<br>
+                                            <b>ε:</b> <span id="emissivityDisplay">0.28</span>
+                                        </font>
+                                    </div>
 
                                     <hr>
 
-                                    <p><b>Bar Length (m):</b> <span id="lengthValue">1.0</span></p>
-                                    <input type="range" id="lengthSlider" min="0.1" max="2" step="0.1" value="1.0">
+                                    <p><b>Heat Transfer Modes:</b></p>
+                                    <div class="checkbox-container">
+                                        <label><input type="checkbox" id="conductionEnabled" checked disabled> <b>Conduction</b> (always on)</label><br>
+                                        <label><input type="checkbox" id="convectionEnabled"> <b>Convection</b></label><br>
+                                        <label><input type="checkbox" id="radiationEnabled"> <b>Radiation</b></label>
+                                    </div>
 
-                                    <p><b>Initial Temperature (°C):</b> <span id="t0Value">100</span></p>
-                                    <input type="range" id="t0Slider" min="0" max="200" step="10" value="100">
+                                    <div id="convectionParams" style="display: none;">
+                                        <div class="slider-container">
+                                            <p><b>Convection Coeff. h (W/m²·K):</b> <span id="hValue">10</span></p>
+                                            <input type="range" id="hSlider" min="1" max="100" step="1" value="10">
+                                            <font size="2"><i>Natural: 5-25 | Forced: 25-250</i></font>
+                                        </div>
+                                        <div class="slider-container">
+                                            <p><b>Ambient Temp T<sub>∞</sub> (°C):</b> <span id="tInfValue">20</span></p>
+                                            <input type="range" id="tInfSlider" min="-50" max="200" step="5" value="20">
+                                        </div>
+                                    </div>
 
-                                    <p><b>Left Boundary (°C):</b> <span id="tLeftValue">0</span></p>
-                                    <input type="range" id="tLeftSlider" min="0" max="200" step="10" value="0">
+                                    <div id="radiationParams" style="display: none;">
+                                        <div class="slider-container">
+                                            <p><b>Surroundings T<sub>sur</sub> (°C):</b> <span id="tSurValue">20</span></p>
+                                            <input type="range" id="tSurSlider" min="-50" max="500" step="10" value="20">
+                                        </div>
+                                    </div>
 
-                                    <p><b>Right Boundary (°C):</b> <span id="tRightValue">0</span></p>
-                                    <input type="range" id="tRightSlider" min="0" max="200" step="10" value="0">
+                                    <hr>
+
+                                    <div class="slider-container">
+                                        <p><b>Bar Length (m):</b> <span id="lengthValue">1.0</span></p>
+                                        <input type="range" id="lengthSlider" min="0.1" max="2" step="0.1" value="1.0">
+                                    </div>
+
+                                    <div class="slider-container">
+                                        <p><b>Initial Temperature (°C):</b> <span id="t0Value">100</span></p>
+                                        <input type="range" id="t0Slider" min="0" max="500" step="10" value="100">
+                                    </div>
+
+                                    <div class="slider-container">
+                                        <p><b>Left Boundary (°C):</b> <span id="tLeftValue">0</span></p>
+                                        <input type="range" id="tLeftSlider" min="0" max="500" step="10" value="0">
+                                    </div>
+
+                                    <div class="slider-container">
+                                        <p><b>Right Boundary (°C):</b> <span id="tRightValue">0</span></p>
+                                        <input type="range" id="tRightSlider" min="0" max="500" step="10" value="0">
+                                    </div>
 
                                     <hr>
 
@@ -165,9 +295,857 @@
                         </tbody>
                     </table>
 
-                    <!-- Metrics -->
+                    <!-- Real-Time Metrics -->
                     <table width="100%" cellpadding="10" cellspacing="2" border="1" style="background-color: #FFFFFF; border-color: #808080; margin-top: 10px;">
                         <tbody>
                             <tr>
                                 <td bgcolor="#000080">
-                                    <font color="#FFFFFF" size="4"><b>Metrics</b></font>
+                                    <font color="#FFFFFF" size="4"><b>Real-Time Metrics</b></font>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="metric-box">
+                                        <b>⏱️ Simulation Time:</b><br>
+                                        <font size="4" color="#FF0000" id="timeDisplay">0.000s</font>
+                                    </div>
+                                    
+                                    <div class="metric-box">
+                                        <b>🌡️ Temperature Range:</b><br>
+                                        <font size="3" color="#FF0000">Max: <span id="maxTempDisplay">0.00</span> °C</font><br>
+                                        <font size="3" color="#0000FF">Avg: <span id="avgTempDisplay">0.00</span> °C</font><br>
+                                        <font size="3" color="#008080">Min: <span id="minTempDisplay">0.00</span> °C</font>
+                                    </div>
+                                    
+                                    <div class="metric-box">
+                                        <b>📊 Numerical Parameters:</b><br>
+                                        <font size="2">
+                                            Δt: <span id="dtDisplay">0.000000</span> s<br>
+                                            Δx: <span id="dxDisplay">0.0000</span> m<br>
+                                            Fo: <span id="fourierDisplay">0.000</span><br>
+                                            <span id="stabilityDisplay">✓ STABLE</span>
+                                        </font>
+                                    </div>
+                                    
+                                    <div class="metric-box">
+                                        <b>📈 Thermal Gradients:</b><br>
+                                        <font size="3">
+                                            Max ΔT: <span id="maxGradDisplay">0.00</span> °C<br>
+                                            ∂T/∂x: <span id="spatialGradDisplay">0.00</span> °C/m
+                                        </font>
+                                    </div>
+                                    
+                                    <div class="metric-box">
+                                        <b>⚡ Energy Analysis:</b><br>
+                                        <font size="2">
+                                            Total: <span id="energyDisplay">0.00</span> kJ<br>
+                                            Cond: <span id="condEnergyDisplay">0.00</span> W<br>
+                                            Conv: <span id="convEnergyDisplay">0.00</span> W<br>
+                                            Rad: <span id="radEnergyDisplay">0.00</span> W
+                                        </font>
+                                    </div>
+
+                                    <div class="metric-box">
+                                        <b>🔬 Material Science:</b><br>
+                                        <font size="2">
+                                            Bi: <span id="biotDisplay">N/A</span><br>
+                                            Thermal Penetration: <span id="penetrationDisplay">0.00</span> m<br>
+                                            Iterations: <span id="iterDisplay">0</span>
+                                        </font>
+                                    </div>
+                                    
+                                    <div class="metric-box" id="profileProbeRow" style="display: none;">
+                                        <b>📍 Profile Probe:</b><br>
+                                        <font size="2" id="profileProbeDisplay"></font>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+
+                <td width="70%" valign="top">
+                    <!-- Main Visualizations -->
+                    <table width="100%" cellpadding="10" cellspacing="2" border="1" style="background-color: #FFFFFF; border-color: #808080; margin-bottom: 10px;">
+                        <tbody>
+                            <tr>
+                                <td bgcolor="#008000">
+                                    <font color="#FFFFFF" size="4"><b>Spatiotemporal Heat Distribution</b></font>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center">
+                                    <canvas id="heatmapCanvas" width="700" height="300" style="border: 2px solid black; background-color: #FFFFFF; cursor: crosshair;"></canvas>
+                                    <p style="background-color: #FFFFCC; padding: 5px; margin-top: 5px; border: 1px dashed black;">
+                                        <b>Click to probe | Time flows downward</b>
+                                    </p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table width="100%" cellpadding="10" cellspacing="2" border="1" style="background-color: #FFFFFF; border-color: #808080; margin-bottom: 10px;">
+                        <tbody>
+                            <tr>
+                                <td bgcolor="#800080">
+                                    <font color="#FFFFFF" size="4"><b>Current Temperature Profile</b></font>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center">
+                                    <canvas id="lineCanvas" width="700" height="300" style="border: 2px solid black; background-color: #FFFFFF; cursor: crosshair;"></canvas>
+                                    <p style="background-color: #FFFFCC; padding: 5px; margin-top: 5px; border: 1px dashed black;">
+                                        <b>Click to place temperature probe</b>
+                                    </p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Post-Simulation Analytics -->
+                    <table width="100%" cellpadding="10" cellspacing="2" border="1" style="background-color: #FFFFFF; border-color: #808080; margin-bottom: 10px;">
+                        <tbody>
+                            <tr>
+                                <td bgcolor="#000080">
+                                    <font color="#FFFFFF" size="4"><b>Post-Simulation Analytics</b></font>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center">
+                                    <table width="100%" cellpadding="0" cellspacing="5">
+                                        <tr>
+                                            <td width="50%" align="center">
+                                                <canvas id="tempHistoryCanvas" width="340" height="250" style="border: 2px solid black; background-color: #FFFFFF;"></canvas>
+                                                <p><b>Temperature vs. Time</b></p>
+                                            </td>
+                                            <td width="50%" align="center">
+                                                <canvas id="energyFluxCanvas" width="340" height="250" style="border: 2px solid black; background-color: #FFFFFF;"></canvas>
+                                                <p><b>Energy Flux History</b></p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td width="50%" align="center">
+                                                <canvas id="gradientCanvas" width="340" height="250" style="border: 2px solid black; background-color: #FFFFFF;"></canvas>
+                                                <p><b>Thermal Gradient Evolution</b></p>
+                                            </td>
+                                            <td width="50%" align="center">
+                                                <canvas id="modeComparisonCanvas" width="340" height="250" style="border: 2px solid black; background-color: #FFFFFF;"></canvas>
+                                                <p><b>Heat Transfer Mode Breakdown</b></p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Footer -->
+    <center style="margin-top: 20px;">
+        <font size="2" color="#000080">
+            <b>Heat Transfer Simulator v5.0 "HEAT 5" - Professional Edition</b><br>
+            Multi-Mode Heat Transfer | Material Science Integration | Advanced Analytics<br>
+            © 2005 Style Tribute | Powered by Finite Difference Method
+        </font>
+    </center>
+
+    <script>
+        // Simulation state
+        let isRunning = false;
+        let time = 0;
+        let temperatures = [];
+        let heatmapData = [];
+        let probePosition = null;
+        let simulationInterval = null;
+        let iterationCount = 0;
+
+        // History arrays for post-simulation graphs
+        let timeHistory = [];
+        let avgTempHistory = [];
+        let maxTempHistory = [];
+        let minTempHistory = [];
+        let condFluxHistory = [];
+        let convFluxHistory = [];
+        let radFluxHistory = [];
+        let maxGradientHistory = [];
+
+        // Parameters
+        const nx = 50;
+        let length = 1.0;
+        let T0 = 100;
+        let TLeft = 0;
+        let TRight = 0;
+        
+        // Material properties
+        let alpha = 2.3e-5;
+        let k_thermal = 80;
+        let cp = 450;
+        let rho = 7874;
+        let emissivity = 0.28;
+        
+        // Heat transfer parameters
+        let convectionEnabled = false;
+        let radiationEnabled = false;
+        let h_conv = 10;
+        let T_inf = 20;
+        let T_sur = 20;
+        const sigma = 5.67e-8; // Stefan-Boltzmann constant
+        
+        let dt = 0;
+        let dx = 0;
+        let r = 0;
+
+        // Canvas contexts
+        const heatmapCanvas = document.getElementById('heatmapCanvas');
+        const heatmapCtx = heatmapCanvas.getContext('2d');
+        const lineCanvas = document.getElementById('lineCanvas');
+        const lineCtx = lineCanvas.getContext('2d');
+        const tempHistoryCanvas = document.getElementById('tempHistoryCanvas');
+        const tempHistoryCtx = tempHistoryCanvas.getContext('2d');
+        const energyFluxCanvas = document.getElementById('energyFluxCanvas');
+        const energyFluxCtx = energyFluxCanvas.getContext('2d');
+        const gradientCanvas = document.getElementById('gradientCanvas');
+        const gradientCtx = gradientCanvas.getContext('2d');
+        const modeComparisonCanvas = document.getElementById('modeComparisonCanvas');
+        const modeComparisonCtx = modeComparisonCanvas.getContext('2d');
+
+        // Initialize
+        resetSimulation();
+
+        // Event listeners - Material Selection
+        document.getElementById('materialSelect').addEventListener('change', function() {
+            const value = this.value;
+            if (value === 'custom') {
+                document.getElementById('customMaterialDiv').style.display = 'block';
+                updateCustomMaterial();
+            } else {
+                document.getElementById('customMaterialDiv').style.display = 'none';
+                const props = value.split(',');
+                alpha = parseFloat(props[0]);
+                k_thermal = parseFloat(props[1]);
+                cp = parseFloat(props[2]);
+                rho = parseFloat(props[3]);
+                emissivity = parseFloat(props[4]);
+                updateMaterialDisplay();
+            }
+            if (!isRunning) resetSimulation();
+        });
+
+        function updateCustomMaterial() {
+            alpha = parseFloat(document.getElementById('customAlpha').value) || 2.3e-5;
+            k_thermal = parseFloat(document.getElementById('customK').value) || 80;
+            cp = parseFloat(document.getElementById('customCp').value) || 450;
+            rho = parseFloat(document.getElementById('customRho').value) || 7874;
+            emissivity = parseFloat(document.getElementById('customEmissivity').value) || 0.28;
+            updateMaterialDisplay();
+        }
+
+        function updateMaterialDisplay() {
+            document.getElementById('alphaDisplay').textContent = alpha.toExponential(2);
+            document.getElementById('kDisplay').textContent = k_thermal.toFixed(1);
+            document.getElementById('cpDisplay').textContent = cp.toFixed(0);
+            document.getElementById('rhoDisplay').textContent = rho.toFixed(0);
+            document.getElementById('emissivityDisplay').textContent = emissivity.toFixed(2);
+        }
+
+        ['customAlpha', 'customK', 'customCp', 'customRho', 'customEmissivity'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                updateCustomMaterial();
+                if (!isRunning) resetSimulation();
+            });
+        });
+
+        // Heat transfer mode toggles
+        document.getElementById('convectionEnabled').addEventListener('change', function() {
+            convectionEnabled = this.checked;
+            document.getElementById('convectionParams').style.display = this.checked ? 'block' : 'none';
+        });
+
+        document.getElementById('radiationEnabled').addEventListener('change', function() {
+            radiationEnabled = this.checked;
+            document.getElementById('radiationParams').style.display = this.checked ? 'block' : 'none';
+        });
+
+        // Sliders
+        document.getElementById('hSlider').addEventListener('input', function() {
+            h_conv = parseFloat(this.value);
+            document.getElementById('hValue').textContent = h_conv;
+        });
+
+        document.getElementById('tInfSlider').addEventListener('input', function() {
+            T_inf = parseFloat(this.value);
+            document.getElementById('tInfValue').textContent = T_inf;
+        });
+
+        document.getElementById('tSurSlider').addEventListener('input', function() {
+            T_sur = parseFloat(this.value);
+            document.getElementById('tSurValue').textContent = T_sur;
+        });
+
+        document.getElementById('lengthSlider').addEventListener('input', function() {
+            length = parseFloat(this.value);
+            document.getElementById('lengthValue').textContent = length.toFixed(1);
+            if (!isRunning) resetSimulation();
+        });
+
+        document.getElementById('t0Slider').addEventListener('input', function() {
+            T0 = parseInt(this.value);
+            document.getElementById('t0Value').textContent = T0;
+            if (!isRunning) resetSimulation();
+        });
+
+        document.getElementById('tLeftSlider').addEventListener('input', function() {
+            TLeft = parseInt(this.value);
+            document.getElementById('tLeftValue').textContent = TLeft;
+            if (!isRunning) resetSimulation();
+        });
+
+        document.getElementById('tRightSlider').addEventListener('input', function() {
+            TRight = parseInt(this.value);
+            document.getElementById('tRightValue').textContent = TRight;
+            if (!isRunning) resetSimulation();
+        });
+
+        document.getElementById('startBtn').addEventListener('click', function() {
+            isRunning = !isRunning;
+            if (isRunning) {
+                this.textContent = 'PAUSE';
+                this.style.backgroundColor = '#FF0000';
+                simulationInterval = setInterval(stepSimulation, 50);
+            } else {
+                this.textContent = 'START';
+                this.style.backgroundColor = '#00FF00';
+                clearInterval(simulationInterval);
+            }
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', resetSimulation);
+
+        lineCanvas.addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const padding = 60;
+            const ratio = (x - padding) / (rect.width - 2 * padding);
+            probePosition = Math.floor(ratio * nx);
+            probePosition = Math.max(0, Math.min(nx - 1, probePosition));
+            drawLineChart();
+            updateMetrics();
+        });
+
+        function resetSimulation() {
+            if (isRunning) {
+                document.getElementById('startBtn').click();
+            }
+            
+            time = 0;
+            iterationCount = 0;
+            const T = new Array(nx).fill(T0);
+            T[0] = TLeft;
+            T[nx - 1] = TRight;
+            
+            temperatures = T;
+            heatmapData = [T.slice()];
+            
+            // Reset history
+            timeHistory = [0];
+            avgTempHistory = [T.reduce((a,b) => a+b) / T.length];
+            maxTempHistory = [Math.max(...T)];
+            minTempHistory = [Math.min(...T)];
+            condFluxHistory = [0];
+            convFluxHistory = [0];
+            radFluxHistory = [0];
+            maxGradientHistory = [0];
+            
+            // Calculate simulation parameters
+            dx = length / (nx - 1);
+            dt = 0.4 * (dx * dx) / (2 * alpha);
+            r = alpha * dt / (dx * dx);
+            
+            drawHeatmap();
+            drawLineChart();
+            drawAnalytics();
+            updateMetrics();
+        }
+
+        function stepSimulation() {
+            dx = length / (nx - 1);
+            dt = 0.4 * (dx * dx) / (2 * alpha);
+            r = alpha * dt / (dx * dx);
+
+            const T = [...temperatures];
+            const Tnew = new Array(nx);
+            
+            // Cross-sectional area per unit length (assuming unit width and height)
+            const A_s = 1.0; // m² (surface area per meter of length)
+            const V = dx * A_s; // volume per element
+
+            Tnew[0] = TLeft;
+            Tnew[nx - 1] = TRight;
+
+            let totalCondFlux = 0;
+            let totalConvFlux = 0;
+            let totalRadFlux = 0;
+
+            for (let i = 1; i < nx - 1; i++) {
+                // Conduction term
+                let dT = r * (T[i + 1] - 2 * T[i] + T[i - 1]);
+                
+                // Convection term (heat loss/gain from surface)
+                let convTerm = 0;
+                if (convectionEnabled) {
+                    convTerm = -(h_conv * A_s / (rho * cp * V)) * (T[i] - T_inf) * dt;
+                    totalConvFlux += h_conv * A_s * (T[i] - T_inf);
+                }
+                
+                // Radiation term (Stefan-Boltzmann)
+                let radTerm = 0;
+                if (radiationEnabled) {
+                    const T_K = T[i] + 273.15;
+                    const T_sur_K = T_sur + 273.15;
+                    radTerm = -(emissivity * sigma * A_s / (rho * cp * V)) * 
+                              (Math.pow(T_K, 4) - Math.pow(T_sur_K, 4)) * dt;
+                    totalRadFlux += emissivity * sigma * A_s * 
+                                    (Math.pow(T_K, 4) - Math.pow(T_sur_K, 4));
+                }
+                
+                Tnew[i] = T[i] + dT + convTerm + radTerm;
+                
+                // Conduction flux calculation
+                if (i < nx - 1) {
+                    totalCondFlux += -k_thermal * A_s * (T[i+1] - T[i]) / dx;
+                }
+            }
+
+            temperatures = Tnew;
+            time += dt;
+            iterationCount++;
+            heatmapData.push(Tnew.slice());
+            if (heatmapData.length > 150) {
+                heatmapData.shift();
+            }
+
+            // Update history (sample every 10 iterations to avoid performance issues)
+            if (iterationCount % 5 === 0) {
+                timeHistory.push(time);
+                avgTempHistory.push(Tnew.reduce((a,b) => a+b) / Tnew.length);
+                maxTempHistory.push(Math.max(...Tnew));
+                minTempHistory.push(Math.min(...Tnew));
+                condFluxHistory.push(totalCondFlux);
+                convFluxHistory.push(totalConvFlux);
+                radFluxHistory.push(totalRadFlux);
+                
+                const gradients = Tnew.slice(1).map((t, i) => Math.abs(t - Tnew[i]));
+                maxGradientHistory.push(Math.max(...gradients));
+                
+                // Limit history length
+                if (timeHistory.length > 200) {
+                    timeHistory.shift();
+                    avgTempHistory.shift();
+                    maxTempHistory.shift();
+                    minTempHistory.shift();
+                    condFluxHistory.shift();
+                    convFluxHistory.shift();
+                    radFluxHistory.shift();
+                    maxGradientHistory.shift();
+                }
+            }
+
+            drawHeatmap();
+            drawLineChart();
+            drawAnalytics();
+            updateMetrics();
+        }
+
+        function drawHeatmap() {
+            if (heatmapData.length === 0) return;
+
+            const width = heatmapCanvas.width;
+            const height = heatmapCanvas.height;
+
+            heatmapCtx.clearRect(0, 0, width, height);
+
+            const allTemps = heatmapData.flat();
+            const maxT = Math.max(...allTemps);
+            const minT = Math.min(...allTemps);
+
+            const cellWidth = width / nx;
+            const cellHeight = height / heatmapData.length;
+
+            heatmapData.forEach((row, rowIdx) => {
+                row.forEach((temp, colIdx) => {
+                    const normalized = (temp - minT) / (maxT - minT || 1);
+                    const r = Math.floor(normalized * 255);
+                    const b = Math.floor((1 - normalized) * 255);
+                    const g = Math.floor(Math.sin(normalized * Math.PI) * 128);
+                    heatmapCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                    heatmapCtx.fillRect(colIdx * cellWidth, rowIdx * cellHeight, cellWidth, cellHeight);
+                });
+            });
+
+            // Draw grid
+            heatmapCtx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+            heatmapCtx.lineWidth = 1;
+            for (let i = 0; i <= nx; i += 5) {
+                heatmapCtx.beginPath();
+                heatmapCtx.moveTo(i * cellWidth, 0);
+                heatmapCtx.lineTo(i * cellWidth, height);
+                heatmapCtx.stroke();
+            }
+        }
+
+        function drawLineChart() {
+            if (temperatures.length === 0) return;
+
+            const width = lineCanvas.width;
+            const height = lineCanvas.height;
+            const padding = 60;
+
+            lineCtx.clearRect(0, 0, width, height);
+            lineCtx.fillStyle = '#FFFFFF';
+            lineCtx.fillRect(0, 0, width, height);
+
+            const maxT = Math.max(...temperatures, 1);
+            const minT = Math.min(...temperatures, 0);
+            const maxX = length;
+
+            // Draw axes
+            lineCtx.strokeStyle = '#000000';
+            lineCtx.lineWidth = 2;
+            lineCtx.beginPath();
+            lineCtx.moveTo(padding, padding);
+            lineCtx.lineTo(padding, height - padding);
+            lineCtx.lineTo(width - padding, height - padding);
+            lineCtx.stroke();
+
+            // Draw labels
+            lineCtx.fillStyle = '#000000';
+            lineCtx.font = 'bold 14px Arial';
+            lineCtx.fillText('Temperature (°C)', 10, 30);
+            lineCtx.fillText('Position (m)', width / 2 - 40, height - 10);
+
+            // Draw grid
+            lineCtx.strokeStyle = '#E0E0E0';
+            lineCtx.lineWidth = 1;
+            for (let i = 0; i <= 10; i++) {
+                const y = padding + (i / 10) * (height - 2 * padding);
+                lineCtx.beginPath();
+                lineCtx.moveTo(padding, y);
+                lineCtx.lineTo(width - padding, y);
+                lineCtx.stroke();
+                
+                const x = padding + (i / 10) * (width - 2 * padding);
+                lineCtx.beginPath();
+                lineCtx.moveTo(x, padding);
+                lineCtx.lineTo(x, height - padding);
+                lineCtx.stroke();
+            }
+
+            // Draw temperature line
+            lineCtx.strokeStyle = '#FF0000';
+            lineCtx.lineWidth = 3;
+            lineCtx.beginPath();
+
+            temperatures.forEach((temp, i) => {
+                const xPos = (i * length) / (nx - 1);
+                const x = padding + (xPos / maxX) * (width - 2 * padding);
+                const y = height - padding - ((temp - minT) / (maxT - minT || 1)) * (height - 2 * padding);
+
+                if (i === 0) lineCtx.moveTo(x, y);
+                else lineCtx.lineTo(x, y);
+            });
+
+            lineCtx.stroke();
+
+            // Draw probe marker
+            if (probePosition !== null) {
+                const xPos = (probePosition * length) / (nx - 1);
+                const x = padding + (xPos / maxX) * (width - 2 * padding);
+                const y = height - padding - ((temperatures[probePosition] - minT) / (maxT - minT || 1)) * (height - 2 * padding);
+                
+                lineCtx.fillStyle = '#0000FF';
+                lineCtx.beginPath();
+                lineCtx.arc(x, y, 8, 0, 2 * Math.PI);
+                lineCtx.fill();
+                lineCtx.strokeStyle = '#FFFF00';
+                lineCtx.lineWidth = 3;
+                lineCtx.stroke();
+            }
+
+            // Draw tick marks and values
+            lineCtx.fillStyle = '#000000';
+            lineCtx.font = '11px Arial';
+            for (let i = 0; i <= 5; i++) {
+                const temp = minT + (i / 5) * (maxT - minT);
+                const y = height - padding - (i / 5) * (height - 2 * padding);
+                lineCtx.fillText(temp.toFixed(0), 5, y + 4);
+
+                const x = padding + (i / 5) * (width - 2 * padding);
+                const pos = (i / 5) * maxX;
+                lineCtx.fillText(pos.toFixed(2), x - 15, height - padding + 20);
+            }
+        }
+
+        function drawAnalytics() {
+            // Temperature History
+            drawTimeSeriesChart(tempHistoryCtx, tempHistoryCanvas, timeHistory, 
+                [
+                    {data: maxTempHistory, color: '#FF0000', label: 'Max'},
+                    {data: avgTempHistory, color: '#0000FF', label: 'Avg'},
+                    {data: minTempHistory, color: '#00FFFF', label: 'Min'}
+                ],
+                'Time (s)', 'Temperature (°C)');
+
+            // Energy Flux History
+            drawTimeSeriesChart(energyFluxCtx, energyFluxCanvas, timeHistory,
+                [
+                    {data: condFluxHistory, color: '#FF0000', label: 'Conduction'},
+                    {data: convFluxHistory, color: '#00FF00', label: 'Convection'},
+                    {data: radFluxHistory, color: '#0000FF', label: 'Radiation'}
+                ],
+                'Time (s)', 'Heat Flux (W)');
+
+            // Gradient Evolution
+            drawTimeSeriesChart(gradientCtx, gradientCanvas, timeHistory,
+                [
+                    {data: maxGradientHistory, color: '#FF6600', label: 'Max ∂T/∂x'}
+                ],
+                'Time (s)', 'Temperature Gradient (°C)');
+
+            // Mode Comparison Pie Chart
+            drawPieChart();
+        }
+
+        function drawTimeSeriesChart(ctx, canvas, xData, seriesArray, xLabel, yLabel) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 50;
+
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+
+            if (xData.length < 2) return;
+
+            // Find data ranges
+            const maxX = Math.max(...xData);
+            const minX = Math.min(...xData);
+            
+            let allYData = [];
+            seriesArray.forEach(series => allYData = allYData.concat(series.data));
+            const maxY = Math.max(...allYData, 1);
+            const minY = Math.min(...allYData, 0);
+
+            // Draw axes
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+
+            // Draw grid
+            ctx.strokeStyle = '#E0E0E0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (i / 5) * (height - 2 * padding);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+
+            // Draw data series
+            seriesArray.forEach(series => {
+                if (series.data.length === 0) return;
+                
+                ctx.strokeStyle = series.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+
+                series.data.forEach((val, i) => {
+                    if (i >= xData.length) return;
+                    const x = padding + ((xData[i] - minX) / (maxX - minX || 1)) * (width - 2 * padding);
+                    const y = height - padding - ((val - minY) / (maxY - minY || 1)) * (height - 2 * padding);
+
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+
+                ctx.stroke();
+            });
+
+            // Draw labels
+            ctx.fillStyle = '#000000';
+            ctx.font = '10px Arial';
+            ctx.fillText(xLabel, width / 2 - 20, height - 5);
+            ctx.save();
+            ctx.translate(10, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(yLabel, 0, 0);
+            ctx.restore();
+
+            // Draw legend
+            let legendY = padding + 10;
+            seriesArray.forEach(series => {
+                ctx.fillStyle = series.color;
+                ctx.fillRect(width - padding - 60, legendY, 10, 10);
+                ctx.fillStyle = '#000000';
+                ctx.font = '9px Arial';
+                ctx.fillText(series.label, width - padding - 45, legendY + 9);
+                legendY += 15;
+            });
+        }
+
+        function drawPieChart() {
+            const ctx = modeComparisonCtx;
+            const canvas = modeComparisonCanvas;
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+
+            // Calculate total energy for each mode
+            const totalCond = condFluxHistory.reduce((a, b) => a + Math.abs(b), 0);
+            const totalConv = convFluxHistory.reduce((a, b) => a + Math.abs(b), 0);
+            const totalRad = radFluxHistory.reduce((a, b) => a + Math.abs(b), 0);
+            const total = totalCond + totalConv + totalRad;
+
+            if (total === 0) {
+                ctx.fillStyle = '#000000';
+                ctx.font = '14px Arial';
+                ctx.fillText('No data yet', width / 2 - 40, height / 2);
+                return;
+            }
+
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = Math.min(width, height) / 3;
+
+            const modes = [
+                {name: 'Conduction', value: totalCond, color: '#FF0000'},
+                {name: 'Convection', value: totalConv, color: '#00FF00'},
+                {name: 'Radiation', value: totalRad, color: '#0000FF'}
+            ];
+
+            let startAngle = -Math.PI / 2;
+
+            modes.forEach(mode => {
+                const sliceAngle = (mode.value / total) * 2 * Math.PI;
+                
+                ctx.fillStyle = mode.color;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Draw label
+                const labelAngle = startAngle + sliceAngle / 2;
+                const labelX = centerX + Math.cos(labelAngle) * (radius * 0.7);
+                const labelY = centerY + Math.sin(labelAngle) * (radius * 0.7);
+                
+                const percentage = ((mode.value / total) * 100).toFixed(1);
+                if (parseFloat(percentage) > 2) {
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = 'bold 11px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`${percentage}%`, labelX, labelY);
+                }
+
+                startAngle += sliceAngle;
+            });
+
+            // Draw legend
+            let legendY = 20;
+            modes.forEach(mode => {
+                ctx.fillStyle = mode.color;
+                ctx.fillRect(10, legendY, 15, 15);
+                ctx.fillStyle = '#000000';
+                ctx.font = '11px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(mode.name, 30, legendY + 12);
+                legendY += 20;
+            });
+        }
+
+        function updateMetrics() {
+            // Time
+            const hrs = Math.floor(time / 3600);
+            const mins = Math.floor((time % 3600) / 60);
+            const secs = (time % 60).toFixed(3);
+            document.getElementById('timeDisplay').textContent = `${secs}s | ${mins}m | ${hrs}h`;
+
+            // Temperature range
+            const avgTemp = temperatures.reduce((a, b) => a + b, 0) / temperatures.length;
+            const maxTemp = Math.max(...temperatures);
+            const minTemp = Math.min(...temperatures);
+            document.getElementById('avgTempDisplay').textContent = avgTemp.toFixed(2);
+            document.getElementById('maxTempDisplay').textContent = maxTemp.toFixed(2);
+            document.getElementById('minTempDisplay').textContent = minTemp.toFixed(2);
+
+            // Numerical parameters
+            document.getElementById('dtDisplay').textContent = dt.toExponential(6);
+            document.getElementById('dxDisplay').textContent = dx.toFixed(4);
+            document.getElementById('fourierDisplay').textContent = r.toFixed(6);
+            
+            const stabilityText = r <= 0.5 ? '✓ STABLE' : '⚠ UNSTABLE!';
+            const stabilityColor = r <= 0.5 ? '#008000' : '#FF0000';
+            document.getElementById('stabilityDisplay').innerHTML = `<font color="${stabilityColor}">${stabilityText}</font>`;
+
+            // Thermal gradients
+            const gradients = temperatures.slice(1).map((t, i) => Math.abs(t - temperatures[i]));
+            const maxGrad = Math.max(...gradients, 0);
+            const spatialGrad = maxGrad / dx;
+            document.getElementById('maxGradDisplay').textContent = maxGrad.toFixed(2);
+            document.getElementById('spatialGradDisplay').textContent = spatialGrad.toFixed(2);
+
+            // Energy analysis
+            const totalEnergy = (temperatures.reduce((sum, temp) => sum + temp, 0) * cp * rho * dx) / 1000; // kJ
+            document.getElementById('energyDisplay').textContent = totalEnergy.toFixed(2);
+            
+            const latestCondFlux = condFluxHistory.length > 0 ? condFluxHistory[condFluxHistory.length - 1] : 0;
+            const latestConvFlux = convFluxHistory.length > 0 ? convFluxHistory[convFluxHistory.length - 1] : 0;
+            const latestRadFlux = radFluxHistory.length > 0 ? radFluxHistory[radFluxHistory.length - 1] : 0;
+            
+            document.getElementById('condEnergyDisplay').textContent = latestCondFlux.toFixed(2);
+            document.getElementById('convEnergyDisplay').textContent = latestConvFlux.toFixed(2);
+            document.getElementById('radEnergyDisplay').textContent = latestRadFlux.toFixed(2);
+
+            // Material science metrics
+            const L_c = length / 2; // characteristic length
+            const biot = convectionEnabled ? (h_conv * L_c / k_thermal).toFixed(4) : 'N/A';
+            document.getElementById('biotDisplay').textContent = biot;
+            
+            const thermalPenetration = Math.sqrt(alpha * time);
+            document.getElementById('penetrationDisplay').textContent = thermalPenetration.toFixed(4);
+            
+            document.getElementById('iterDisplay').textContent = iterationCount.toLocaleString();
+
+            // Profile probe
+            if (probePosition !== null) {
+                const xPos = (probePosition * length) / (nx - 1);
+                const temp = temperatures[probePosition];
+                const localGrad = probePosition < nx - 1 ? 
+                    Math.abs(temperatures[probePosition + 1] - temp) / dx : 0;
+                
+                document.getElementById('profileProbeRow').style.display = '';
+                document.getElementById('profileProbeDisplay').innerHTML = 
+                    `x: ${xPos.toFixed(3)} m<br>T: ${temp.toFixed(2)} °C<br>` +
+                    `∂T/∂x: ${localGrad.toFixed(2)} °C/m<br>Index: ${probePosition}`;
+            } else {
+                document.getElementById('profileProbeRow').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
