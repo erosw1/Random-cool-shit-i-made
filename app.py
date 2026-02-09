@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+ import React, { useState, useEffect } from 'react';
 
 const HeatConductionSimulator = () => {
   // Material presets with thermal diffusivity (m²/s)
@@ -668,3 +668,4 @@ const LineChart = ({ temperatures, xValues, probePosition }) => {
 };
 
 export default HeatConductionSimulator;
+
